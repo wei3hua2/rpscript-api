@@ -1,0 +1,15 @@
+import * as c from './src/common/expressions'
+Hello "world"
+Open "file.txt"
+
+
+import * as c from './src/common/expressions'
+
+let $COMMON_CONTEXT = c.initContext();
+let $RESULT = null;
+
+$RESULT = await Hello(["world"]);
+
+$RESULT = await c.Open(["file.txt"]);
+
+==========================================================

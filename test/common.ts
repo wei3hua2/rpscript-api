@@ -1,9 +1,8 @@
-import fs from 'fs';
-
 import * as c from 'chai';
 import chaiAsPromised from "chai-as-promised";
 import * as m from 'mocha';
-
+import * as common from '../src/common/expressions';
+import {RpsContext} from '../src/context';
 
 m.before(() => {
     c.should();
@@ -11,10 +10,25 @@ m.before(() => {
 });
 
 
-m.describe('Common', () => {
-  m.xit('launch run', () => {
+m.describe.skip('Common', () => {
+  m.it('open testopen.txt', (done) => {
+    let pathDirectory = "./test/fixture/testopen.txt";
+    let timeout = "5";
+    let typeText = "helloworld";
+    let $CONTEXT = new RpsContext();
 
-    c.expect( true ).to.be.true;
+    common.Open($CONTEXT,[pathDirectory]).then((result) => {
+        c.expect( result ).to.be.true;
+        common.Wait($CONTEXT,[timeout]).then(() => {
+
+          common.Type($CONTEXT,[typeText]).then((output) => {
+            c.expect(output).to.a('string',typeText);
+            done();
+          });
+
+        });
+    });
+
   }).timeout(0);
 
 })

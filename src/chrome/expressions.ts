@@ -1,79 +1,36 @@
-import {FunctionSymbol} from '../../antlr/RpsSymTable';
-import {Expression} from '../../core/expression';
-import {ChromeEngine} from './engine';
+import {LaunchModel,NavigateModel,TypeModel,ClickModel,CloseModel} from './model/model';
+import {RpsContext} from '../context';
+import {ChromeUtil} from './util';
 
-export class LaunchExpression extends Expression{
-  static NAME = "launch.";
-  engine:ChromeEngine;
+let chromeUtil = new ChromeUtil();
 
-  constructor(engine:ChromeEngine){
-    super();
-    this.engine = engine;
-  }
-
-  execute(expr:FunctionSymbol) :Promise<any> {
-    return this.engine.launch();
-  }
+export function Launch (ctx:RpsContext,arg:string[],opts?:any) : Promise<any> {
+  let model = new LaunchModel(arg,opts);
+  return chromeUtil.launch(ctx);
 }
 
-export class NavigateExpression extends Expression{
-  static NAME = "navigate.";
-  engine:ChromeEngine;
-
-  constructor(engine:ChromeEngine){
-    super();
-    this.engine = engine;
-  }
-
-  execute(expr:FunctionSymbol) :Promise<any> {
-    let url = expr.argument[0];
-    url = url.replace(/"/g , "");
-    return this.engine.navigate(url);
-  }
+export function Run (ctx:RpsContext,command:string, arg:string[],opts?:any) : Promise<any> {
+  // let model = new LaunchModel(arg,opts);
+  return chromeUtil.run(ctx,command,arg,opts);
 }
 
-export class ShutdownExpression extends Expression{
-  static NAME = "shutdown.";
-  engine:ChromeEngine;
-
-  constructor(engine:ChromeEngine){
-    super();
-    this.engine = engine;
-  }
-
-  execute(expr:FunctionSymbol) :Promise<any> {
-    return this.engine.kill();
-  }
-}
-
-export class TypeExpression extends Expression{
-  static NAME = "type.";
-  engine:ChromeEngine;
-
-  constructor(engine:ChromeEngine){
-    super();
-    this.engine = engine;
-  }
-
-  execute(expr:FunctionSymbol) :Promise<any> {
-    let text = expr.argument[0];
-    text = text.replace(/"/g , "");
-    return this.engine.type(text);
-  }
-}
-
-export class ClickExpression extends Expression{
-  static NAME = "click.";
-  engine:ChromeEngine;
-
-  constructor(engine:ChromeEngine){
-    super();
-    this.engine = engine;
-  }
-
-  execute(expr:FunctionSymbol) :Promise<any> {
-    let element = expr.argument[0];
-    element = element.replace(/"/g , "");
-    return this.engine.click(element);
-  }
-}
+// export function Navigate (ctx:RpsContext,arg:string[],opts?:any) : Promise<any> {
+//   let model = new NavigateModel(arg,opts);
+//   return chromeUtil.navigate(model.url);
+// }
+//
+// export function Type (ctx:RpsContext,arg:string[],opts?:any) : Promise<any> {
+//   let model = new TypeModel(arg,opts);
+//   return chromeUtil.type(model.text);
+// }
+//
+// export function Click (ctx:RpsContext,arg:string[],opts?:any) : Promise<any> {
+//   let model = new ClickModel(arg,opts);
+//
+//   return chromeUtil.click(model.element);
+// }
+//
+// export function Close (ctx:RpsContext,arg:string[],opts?:any) : Promise<any> {
+//   let model = new CloseModel(arg,opts);
+//   return chromeUtil.close(ctx);
+// }

@@ -7,7 +7,7 @@ import * as m from 'mocha';
 m.describe('Index', () => {
   m.it('verify index', () => {
 
-    console.log(index);
+    // console.log(index);
 
     c.expect( true ).to.be.true;
   });
