@@ -10,7 +10,7 @@ m.before(() => {
 });
 
 
-m.describe('Chrome', () => {
+m.describe.skip('Chrome', () => {
   m.xit('should launch & close chrome', (done) => {
     let $CONTEXT = new RpsContext();
 
@@ -33,7 +33,7 @@ m.describe('Chrome', () => {
     let $CONTEXT = new RpsContext();
 
     chrome.Launch($CONTEXT,[]).then((res)=>{
-      chrome.Run($CONTEXT,"pageGoto",["https://www.yahoo.com"]).then((res)=>{
+      chrome.Run($CONTEXT,"page.goto",["https://www.yahoo.com"]).then((res)=>{
         done();
       });
     });

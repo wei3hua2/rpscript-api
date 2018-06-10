@@ -46,21 +46,24 @@ export class ChromeUtil {
   // pageClick , ['#select'], {button:'left', delay:1000}
   async run(ctx:RpsContext, command:string, args?:any[], opts?:any) {
 
-    let firstCapIndex = command.search((/[A-Z]/));
+    // let firstCapIndex = command.search((/[A-Z]/));
+    // let clazz = command.substring(0,firstCapIndex);
+    // let action = command.substring(firstCapIndex);
+    // action = action.charAt(0).toLowerCase() + action.slice(1);
 
-    let clazz = command.substring(0,firstCapIndex);
-
-    let action = command.substring(firstCapIndex);
-    action = action.charAt(0).toLowerCase() + action.slice(1);
+    let clazz = command.split('.')[0];
+    let action = command.split('.')[1];
+    let params = [].concat(args, opts);
 
     let result = null;
+
     if(clazz === 'page') {
       let page = await ctx.chrome.getCurrentPage();
-      let params = [].concat(args, opts);
-      
       result = await page[action].apply(page, params);
+    }else if(clazz === 'browser'){
+      let browser = ctx.chrome.getCurrentBrowser();
+      result = browser[action].apply(browser, params);
     }
-
 
     return result;
   }

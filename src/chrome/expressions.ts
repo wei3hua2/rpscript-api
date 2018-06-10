@@ -1,3 +1,7 @@
+/**
+ * @module Chrome
+ */
+
 import {LaunchModel,NavigateModel,TypeModel,ClickModel,CloseModel} from './model/model';
 import {RpsContext} from '../context';
 import {ChromeUtil} from './util';
@@ -10,7 +14,6 @@ export function Launch (ctx:RpsContext,arg:string[],opts?:any) : Promise<any> {
 }
 
 export function Run (ctx:RpsContext,command:string, arg:string[],opts?:any) : Promise<any> {
-  // let model = new LaunchModel(arg,opts);
   return chromeUtil.run(ctx,command,arg,opts);
 }
 

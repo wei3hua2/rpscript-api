@@ -1,3 +1,7 @@
+/**
+ * @module Test
+ */
+
 import fs from 'fs';
 import c from 'chai';
 import Mocha from 'mocha';

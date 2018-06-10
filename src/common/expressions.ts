@@ -1,42 +1,29 @@
-import fs from 'fs';
+/**
+ * @module Common
+ */
+
 import opn from 'opn';
 import shelljs from 'shelljs';
-import {OpenModel, WaitModel, CreateModel, TypeModel} from './model/model';
 import {RpsContext} from '../context';
+import R from 'ramda';
 
-var robot = require('robotjs');
-
-export function Open (ctx:RpsContext,arg:string[],opts?:any) : Promise<any> {
-  let model = new OpenModel(arg,opts);
+function _Open (ctx:RpsContext,opts:{}, filepath:string) : Promise<any> {
 
   //workaround for not working on my machine
   if(process.platform === 'linux'){
-    shelljs.exec(`xdg-open ${model.filepath}`);
-    return Promise.resolve(true);
+    shelljs.exec(`xdg-open ${filepath}`);
+    return Promise.resolve();
   }
-  else return opn(model.filepath);
+  else return opn(filepath);
 }
+let Open = R.curry(_Open);
+export {Open};
 
-export function Wait (ctx:RpsContext,arg:string[],opts?:any) : Promise<boolean> {
-  let model = new WaitModel(arg,opts);
 
+function _Wait (ctx:RpsContext,opts:{}, period:number) : Promise<any> {
   return new Promise(function(resolve) {
-      setTimeout(resolve, model.period*1000);
+      setTimeout(resolve,period*1000);
   });
 }
-
-export function Create (ctx:RpsContext,arg:string[],opts?:any) : Promise<boolean> {
-  let model = new CreateModel(arg,opts);
-  fs.writeFileSync(model.filename,model.initialContent);
-
-  return Promise.resolve(true);
-}
-
-export function Type (ctx:RpsContext,arg:string[], opts?:any) : Promise<any> {
-  let model = new TypeModel(arg,opts);
-
-  robot.typeStringDelayed(model.text,800);
-  robot.keyTap("enter");
-
-  return Promise.resolve(model.text);
-}
+let Wait = R.curry(_Wait);
+export {Wait};
