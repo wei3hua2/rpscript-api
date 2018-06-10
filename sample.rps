@@ -13,3 +13,7 @@ $RESULT = await Hello(["world"]);
 $RESULT = await c.Open(["file.txt"]);
 
 ==========================================================
+
+await browser.Run(ctx,"page.goto",["http://www.google.com.sg"],{})
+
+browser.goto "https://www.google.com.sg"

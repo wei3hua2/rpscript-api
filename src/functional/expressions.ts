@@ -1,17 +1,18 @@
 /**
  * @module Functional
  */
-import fs from 'fs';
-import opn from 'opn';
-import shelljs from 'shelljs';
-import {MapModel} from './model/model';
 import {RpsContext} from '../context';
 import R from 'ramda';
 
-export function Map (ctx:RpsContext,args:any[],opts?:Object) : Promise<any> {
-  let model = new MapModel(args,opts);
 
+export function Map (ctx:RpsContext,opts:{}, fn?, functor?) : Promise<any> {
   return Promise.resolve(
-    model.functor ?  R.map(model.funct)(model.functor) : R.map(model.funct)
+    functor ? R.map(fn,functor) : R.map(fn)
+  );
+}
+
+export function Filter (ctx:RpsContext,opts:{}, fn?, functor?) : Promise<any> {
+  return Promise.resolve(
+    functor ? R.filter(fn,functor) : R.filter(fn)
   );
 }

@@ -8,7 +8,6 @@ import {RpsContext} from '../context';
 import R from 'ramda';
 
 function _Open (ctx:RpsContext,opts:{}, filepath:string) : Promise<any> {
-
   //workaround for not working on my machine
   if(process.platform === 'linux'){
     shelljs.exec(`xdg-open ${filepath}`);
