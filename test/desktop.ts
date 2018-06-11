@@ -5,17 +5,17 @@ import {RpsContext} from '../src/context';
 
 let $CONTEXT;
 
-m.beforeEach(() => {
+beforeEach(() => {
   $CONTEXT = new RpsContext();
 })
 
-m.describe.skip('Desktop', () => {
-  m.it('get desktop info', async function() {
+describe.skip('Desktop', () => {
+  it('get desktop info', async function() {
     let info = await desktop.Info($CONTEXT,{});
     c.expect(info).to.exist;
   });
 
-  m.it('mouse move', async function() {
+  it('mouse move', async function() {
     let mouse = await desktop.Mouse($CONTEXT,{click:true});
     let output = mouse(10,10);
 

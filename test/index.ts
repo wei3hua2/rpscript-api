@@ -2,12 +2,9 @@
 var index = require('../src/index');
 
 import * as c from 'chai';
-import * as m from 'mocha';
 
-m.describe.skip('Index', () => {
-  m.it('verify index', () => {
-
-    // console.log(index);
+describe.skip('Index', () => {
+  it('verify index', () => {
 
     c.expect( true ).to.be.true;
   });

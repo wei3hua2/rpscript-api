@@ -1,17 +1,10 @@
 import * as c from 'chai';
-import chaiAsPromised from "chai-as-promised";
-import * as m from 'mocha';
 import {RpsContext} from '../src/context';
 import * as chrome from '../src/chrome/expressions';
 
-m.before(() => {
-    c.should();
-    c.use(chaiAsPromised);
-});
 
-
-m.describe.skip('Chrome', () => {
-  m.xit('should launch & close chrome', (done) => {
+describe.skip('Chrome', () => {
+  xit('should launch & close chrome', (done) => {
     let $CONTEXT = new RpsContext();
 
     chrome.Launch($CONTEXT,[]).then((res)=>{
@@ -27,9 +20,9 @@ m.describe.skip('Chrome', () => {
 
     });
 
-  }).timeout(0);
+  });
 
-  m.it('Click on Page', (done) => {
+  it('Click on Page', (done) => {
     let $CONTEXT = new RpsContext();
 
     chrome.Launch($CONTEXT,[]).then((res)=>{

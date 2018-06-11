@@ -1,17 +1,16 @@
 import * as c from 'chai';
-import * as m from 'mocha';
 import * as file from '../src/file/expressions';
 import {RpsContext} from '../src/context';
 
 let $CONTEXT,$RESULT;
 
-m.beforeEach(() => {
+beforeEach(() => {
   $CONTEXT = new RpsContext();
 })
 
 
-m.describe('File', () => {
-  m.it('should create, append, delete file', async function() {
+describe('File', () => {
+  it('should create, append, delete file', async function() {
     let pathDirectory = "./test/fixture/tempfilename.txt";
     let content = "Hello";
 

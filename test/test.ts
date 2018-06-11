@@ -1,17 +1,16 @@
 import * as c from 'chai';
-import * as m from 'mocha';
 import * as test from '../src/test/expressions';
 import {RpsContext} from '../src/context';
 
 let $CONTEXT,$RESULT;
 
-m.beforeEach(() => {
+beforeEach(() => {
   $CONTEXT = new RpsContext();
 })
 
 
-m.describe('Test', () => {
-  m.it('add test suite', async function() {
+describe.skip('Test', () => {
+  it('add test suite', async function() {
     let TestCase = test.TestCase($CONTEXT,{});
 
     let $RESULT:any = await test.TestSuite($CONTEXT, {}, "Test Suite");
