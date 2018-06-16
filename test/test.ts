@@ -28,7 +28,7 @@ describe.skip('Test', () => {
     $RESULT = await test.TestReport($CONTEXT,{
       reporterFilename:'hello',
       reportTitle:'Hello World',
-      autoOpen:true});
+      autoOpen:false});
 
     c.expect($RESULT).to.be.true;
   });
