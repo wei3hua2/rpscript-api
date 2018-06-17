@@ -18,6 +18,7 @@ const KEYBOARD_DEFAULT:KeyboardOpts = {delay:800 , tap:false, toggle:'', tapModi
 function _Keyboard (ctx:RpsContext,opts:KeyboardOpts, text:string) : Promise<any> {
 
   return new Promise( (resolve, reject) => {
+    ctx.event.emit("action","keyword", text);
     let result = undefined;
     const options = R.merge(KEYBOARD_DEFAULT, opts);
 

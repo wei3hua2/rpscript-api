@@ -1,4 +1,4 @@
-import {Open} from './common/expressions';
+import {Open,Wait} from './common/expressions';
 import {Keyboard} from './desktop/expressions';
 
-export {Open, Keyboard as Type};
+export {Open, Wait, Keyboard as Type};
