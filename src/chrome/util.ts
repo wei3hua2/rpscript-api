@@ -8,71 +8,161 @@ import {ChromeContext,ChromeConfig} from './model/context';
 import _ from 'lodash';
 
 import puppeteer from 'puppeteer';
+import {ElementHandle, JSHandle,Browser,Page,Response} from 'puppeteer';
 
 const CDP = require('chrome-remote-interface');
 
 export class ChromeUtil {
 
-  readonly chromeSwitches:string = "--user-data-dir=chrome/tagui_user_profile --remote-debugging-port=9222 --web-security=false about:blank";
-  readonly headlessSwitch:string="--headless --disable-gpu";
-  readonly darwinCommand:string = "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome";
-  readonly linuxCommand:string = "google-chrome";
-  readonly emptyIOCommand:string = "> /dev/null 2>&1 &";
-  readonly windowSize:string="--window-size=1366,768";
-
-  chromeProcessId:string = "";
-  chromeId:string = "";
-  // private _socketClient:any = undefined;
   cdp:any = undefined;
 
   constructor(){}
 
-  async launch(ctx:RpsContext){
-    // let browser = await this.launchDefaultChrome(ctx.chrome.config);
+  async launch(ctx:RpsContext) : Promise<Browser>{
     let browser = await this.launchNewChrome(ctx.chrome.config);
     ctx.chrome.addBrowser(browser);
 
     return browser;
   }
 
-  async newPage(ctx:RpsContext) {
+  async newPage(ctx:RpsContext) : Promise<Page>{
     let page = await ctx.chrome.getCurrentBrowser().newPage();
     await ctx.chrome.updateCurrentPage();
 
     return page;
   }
 
-  //command: example
-  // pageClick , ['#select'], {button:'left', delay:1000}
-  async run(ctx:RpsContext, command:string, args?:any[], opts?:any) {
+  async close(ctx:RpsContext, opts:any) :Promise<void>{
+    let result = await this.run(ctx,'page.close',opts);
+    await ctx.chrome.updateCurrentPage();
+  }
 
-    // let firstCapIndex = command.search((/[A-Z]/));
-    // let clazz = command.substring(0,firstCapIndex);
-    // let action = command.substring(firstCapIndex);
-    // action = action.charAt(0).toLowerCase() + action.slice(1);
+//======  page
+
+  $ = (ctx:RpsContext, opts:any, selector:string) : Promise<ElementHandle> => this.run(ctx,'page.$',opts);
+  $$ = (ctx:RpsContext, opts:any, selector:string) : Promise<ElementHandle[]> => this.run(ctx,'page.$$',opts);
+  $$eval = (ctx:RpsContext, opts:any, selector:string, pageFn:any, ...args) : Promise<ElementHandle[]> => this.run(ctx,'page.$$eval',opts,pageFn,...args)
+  $eval = (ctx:RpsContext, opts:any, selector:string, pageFn:any, ...args) : Promise<ElementHandle[]>  => this.run(ctx,'page.$eval',opts,pageFn,...args)
+  $x = (ctx:RpsContext, opts:any, expression:string) : Promise<ElementHandle[]> => this.run(ctx,'page.$x',opts,expression);
+
+  addScriptTag = (ctx:RpsContext, opts:any) : Promise<ElementHandle> => this.run(ctx,'page.addScriptTag',opts)
+  addStyleTag = (ctx:RpsContext, opts:any) : Promise<ElementHandle> => this.run(ctx,'page.addStyleTag',opts)
+
+  authenticate = (ctx:RpsContext, opts:any, credential:Object) : Promise<any> => this.run(ctx,'page.authenticate',opts, credential)
+
+  bringToFront = (ctx:RpsContext, opts:any) : Promise<any> => this.run(ctx,'page.bringToFront',opts)
+
+  browser = (ctx:RpsContext, opts:any) : Promise<any> => this.run(ctx,'page.browser',opts);
+  click = (ctx:RpsContext, opts:any, selector:string) : Promise<any> => this.run(ctx,'page.click',opts, selector);
+  content = (ctx:RpsContext, opts:any) : Promise<string> => this.run(ctx,'page.content',opts)
+
+  cookies = (ctx:RpsContext, opts:any, ...urls:string[]) : Promise<Object[]> => this.run(ctx,'page.cookies',opts,...urls)
+  deleteCookie = (ctx:RpsContext, opts:any, ...cookies:Object[]) : Promise<any> => this.run(ctx,'page.deleteCookie',opts,...cookies);
+  setCookie = (ctx:RpsContext, opts:any, ...cookies:Object[]) : Promise<any> => this.run(ctx,'page.setCookie',opts,...cookies);
+
+  emulate = (ctx:RpsContext, opts:any) : Promise<any> => this.run(ctx,'page.emulate',opts);
+  emulateMedia = (ctx:RpsContext, opts:any, mediaType:string) : Promise<any> => this.run(ctx,'page.emulateMedia',opts, mediaType);
+  
+  evaluate = (ctx:RpsContext, opts:any, str:string|Function,...args ) : Promise<any> => this.run(ctx,'page.evaluate',opts,str,args)
+  evaluateHandle = (ctx:RpsContext, opts:any, str:string|Function,...args ) : Promise<JSHandle> => this.run(ctx,'page.evaluateHandle',opts,str,args)
+  evaluateOnNewDocument = (ctx:RpsContext, opts:any, pageFn:string|Function,...args ) : Promise<void> => this.run(ctx,'page.evaluate',opts,pageFn,args)
+  exposeFunction = (ctx:RpsContext, opts:any, name:string, pageFn:Function ) : Promise<void> => this.run(ctx,'page.exposeFunction',opts,name, pageFn)
+
+  focus = (ctx:RpsContext, opts:any, selector:string ) : Promise<any> => this.run(ctx,'page.focus',opts,selector)
+
+  goBack = (ctx:RpsContext, opts:any ) : Promise<Response> => this.run(ctx,'page.goBack',opts)
+  goForward = (ctx:RpsContext, opts:any ) : Promise<Response> => this.run(ctx,'page.goForward',opts)
+  goto = (ctx:RpsContext, opts:any, url:string) : Promise<Response> => this.run(ctx,'page.goto',opts,url);  
+  hover = (ctx:RpsContext, opts:any, selector:string ) : Promise<any> => this.run(ctx,'page.hover',opts);
+  isClosed = (ctx:RpsContext, opts:any ) : Promise<boolean> => this.run(ctx,'page.isClosed',opts);
+  pdf = (ctx:RpsContext, opts:any ) : Promise<Buffer> => this.run(ctx,'page.pdf',opts);
+  
+  queryObject = (ctx:RpsContext, opts:any, prototypeHandle:JSHandle ) : Promise<JSHandle> => this.run(ctx,'page.queryHandle',opts, prototypeHandle);
+  reload = (ctx:RpsContext, opts:any ) : Promise<Buffer> => this.run(ctx,'page.reload',opts);
+  screenshot = (ctx:RpsContext, opts:any ) : Promise<Buffer> => this.run(ctx,'page.screenshot',opts);
+
+  select = (ctx:RpsContext, opts:any, selector:string, ...values:string[] ) : Promise<string[]> => this.run(ctx,'page.select',opts,selector,...values);
+
+  setBypassCSP = (ctx:RpsContext, opts:any, enabled:boolean ) : Promise<any> => this.run(ctx,'page.setBypassCSP',opts,enabled);
+  setCacheEnabled = (ctx:RpsContext, opts:any, enabled:boolean ) : Promise<any> => this.run(ctx,'page.setCacheEnabled',opts,enabled);
+  setContent = (ctx:RpsContext, opts:any, html:string ) : Promise<any> => this.run(ctx,'page.setContent',opts,html);
+  setDefaultNavigationTimeout = (ctx:RpsContext, opts:any, timeout:number ) : Promise<any> => this.run(ctx,'page.setDefaultNavigationTimeout',opts,timeout);
+  setExtraHTTPHeaders = (ctx:RpsContext, opts:any, header:Object ) : Promise<any> => this.run(ctx,'page.setExtraHTTPHeaders',opts,header);
+  setJavaScriptEnabled = (ctx:RpsContext, opts:any, enabled:boolean ) : Promise<any> => this.run(ctx,'page.setExtraHTTPHeaders',opts,enabled);
+  setOfflineMode = (ctx:RpsContext, opts:any, enabled:boolean ) : Promise<any> => this.run(ctx,'page.setOfflineMode',opts,enabled);
+  setRequestInterception = (ctx:RpsContext, opts:any, value:boolean ) : Promise<any> => this.run(ctx,'page.setOfflineMode',opts,value);
+  setUserAgent = (ctx:RpsContext, opts:any, userAgent:string ) : Promise<any> => this.run(ctx,'page.setUserAgent',opts,userAgent);
+  setViewport = (ctx:RpsContext, opts:any, viewPort:Object ) : Promise<any> => this.run(ctx,'page.setUserAgent',opts,viewPort);
+
+  tap = (ctx:RpsContext, opts:any, selector:string ) : Promise<any> => this.run(ctx,'page.tap',opts, selector);
+
+  title = (ctx:RpsContext, opts:any) : Promise<string> => this.run(ctx,'page.tap',opts);
+  type = (ctx:RpsContext, opts:any, selector:string, text) : Promise<any> => this.run(ctx,'page.type',opts, selector,text);
+
+  waitFor = (ctx:RpsContext, opts:any,selectorOrFunctionOrTimeout:string|number|Function) : Promise<JSHandle> => this.run(ctx,'page.waitFor',opts, selectorOrFunctionOrTimeout);
+  waitForFunction = (ctx:RpsContext, opts:any, pageFn:Function|string) : Promise<JSHandle> => this.run(ctx,'page.waitForFunction',opts,pageFn);
+  waitForNavigation = (ctx:RpsContext, opts:any) : Promise<Response> => this.run(ctx,'page.waitForNavigation',opts);
+  waitForSelector = (ctx:RpsContext, opts:any, selector:string) : Promise<ElementHandle> => this.run(ctx,'page.waitForSelector',opts, selector);
+  waitForXPath = (ctx:RpsContext, opts:any, xpath:string) : Promise<ElementHandle> => this.run(ctx,'page.waitForXPath',opts);
+
+  url = async (ctx:RpsContext, opts:any) : Promise<string> => (await ctx.chrome.getCurrentPage()).url();
+  viewport = async (ctx:RpsContext, opts:any) : Promise<Object> => (await ctx.chrome.getCurrentPage()).viewport();
+  metrics = async (ctx:RpsContext, opts:any) : Promise<Object> => this.run(ctx,'page.metrics',opts);
+
+  //======  mouse
+  mouseClick = (ctx:RpsContext, opts:any, x:number,y:number) : Promise<void> => this.run(ctx,'mouse.click',opts, x, y);
+  mouseMove = (ctx:RpsContext, opts:any, x:number,y:number) : Promise<void> => this.run(ctx,'mouse.move',opts, x, y);
+  mouseDown = (ctx:RpsContext, opts:any) : Promise<void> => this.run(ctx,'mouse.down',opts);
+
+  //======  keyword
+  keyboardDown = (ctx:RpsContext, opts:any,key:string) : Promise<void> => this.run(ctx,'keyboard.down',opts,key);
+  keyboardPress = (ctx:RpsContext, opts:any,key:string) : Promise<void> => this.run(ctx,'keyboard.down',opts,key);
+  keyboardSendChar = (ctx:RpsContext, opts:any, char:string) : Promise<void> => this.run(ctx,'keyboard.sendCharacter',opts,char);
+  keyboardType = (ctx:RpsContext, opts:any,text:string) : Promise<void> => this.run(ctx,'keyboard.type',opts,text);
+  keyboardUp = (ctx:RpsContext, opts:any,key:string) : Promise<void> => this.run(ctx,'keyboard.up',opts,key);
+
+  //====== touchscreen
+  touchscreenTap = (ctx:RpsContext, opts:any,x:number,y:number) : Promise<void> => this.run(ctx,'touchscreen.tap',opts,x,y);
+
+  //======  coverage
+  startCSSCoverage = (ctx:RpsContext, opts:any) : Promise<void> => this.run(ctx,'coverage.startCSSCoverage',opts);
+  stopCSSCoverage = (ctx:RpsContext, opts:any) : Promise<void> => this.run(ctx,'coverage.stopCSSCoverage',opts);
+  startJSCoverage = (ctx:RpsContext, opts:any) : Promise<void> => this.run(ctx,'coverage.startJSCoverage',opts);
+  stopJSCoverage = (ctx:RpsContext, opts:any) : Promise<void> => this.run(ctx,'coverage.stopJSCoverage',opts);
+
+  //======  tracing
+  tracingStart = (ctx:RpsContext, opts:any) : Promise<void> => this.run(ctx,'tracing.start',opts);
+  tracingStop = (ctx:RpsContext, opts:any) : Promise<Buffer> => this.run(ctx,'tracing.stop',opts);
+
+  // =================================
+
+  //command: example
+  // page.click , {button:'left', delay:1000}, '#select'
+  async run(ctx:RpsContext, command:string, opts:any, ...args:any[]) : Promise<any>{
 
     let clazz = command.split('.')[0];
     let action = command.split('.')[1];
     let params = [].concat(args, opts);
 
     let result = null;
+    let entity = null;
+    
+    if(clazz === 'page') entity = await ctx.chrome.getCurrentPage();
+    else if(clazz === 'browser') entity = ctx.chrome.getCurrentBrowser();
+    else if(clazz === 'coverage') entity = (await ctx.chrome.getCurrentPage()).coverage;
+    else if(clazz === 'keyboard') entity = (await ctx.chrome.getCurrentPage()).keyboard;
+    else if(clazz === 'mouse') entity = (await ctx.chrome.getCurrentPage()).mouse;
+    else if(clazz === 'touchscreen') entity = (await ctx.chrome.getCurrentPage()).touchscreen;
+    else if(clazz === 'tracing') entity = (await ctx.chrome.getCurrentPage()).tracing;
+    // else if(clazz === 'frame') entity = (await ctx.chrome.getCurrentPage()).mainFrame();
+    // else if(clazz === 'target') entity = (await ctx.chrome.getCurrentPage()).target;
+    // else if(clazz === 'worker') entity = (await ctx.chrome.getCurrentPage()).workers();
+    
 
-    if(clazz === 'page') {
-      let page = await ctx.chrome.getCurrentPage();
-      result = await page[action].apply(page, params);
-    }else if(clazz === 'browser'){
-      let browser = ctx.chrome.getCurrentBrowser();
-      result = browser[action].apply(browser, params);
-    }
+    result = await entity[action].apply(entity, params);
 
     return result;
   }
-
-
-  // async close(ctx:RpsContext){ return ctx.chrome.browser.close(); }
-  // navigate(url:string){return Promise.resolve(true);}
-  // type(text:string){return Promise.resolve(true);}
-  // click(element:string){return Promise.resolve(true);}
 
   private async launchNewChrome(config:ChromeConfig): Promise<puppeteer.Browser> {
     let browser = await puppeteer.launch({
@@ -129,101 +219,6 @@ export class ChromeUtil {
     else if (process.platform === 'linux') return "google-chrome";
     else if (process.platform === 'darwin') return "google chrome";
   }
-
-  // setup() {
-  // }
-  // execute():any{
-  //   return {
-  //     expand: () => {
-  //       Promise.resolve('TODO: expand chrome')
-  //     },
-  //     launch: () => this.launch(),
-  //     url:() => Promise.resolve('TODO: url navigation')
-  //   }
-  // }
-  // teardown(){}
-  //
-  // init () {
-  //   fs.writeFileSync('tagui_chrome.in','');
-  //   fs.writeFileSync('tagui_chrome.out','[0] START');
-  // }
-  // async launch () : Promise<any>{
-  //   if(['aix','freebsd','linux','openbsd'].includes(process.platform)) return this.launchLinux();
-  //   else if('darwin' === process.platform) return this.launchMac();
-  //   else if('win32' === process.platform) return this.launchWin();
-  //   else throw Error('os not supported');
-  // }
-  //
-  // async navigate (url:string) : Promise<any>{
-  //   return this.cdp.Page.navigate({url: url});
-  // }
-  //
-  // async type (text:string) :Promise<any> {
-  //   for(var i =0; i< text.length; i++){
-  //     let result = await this.cdp.Input.dispatchKeyEvent({type:'char',text:text[i]});
-  //   }
-  //
-  //   return await this.cdp.Input.dispatchKeyEvent({
-  //     "type" : "rawKeyDown","windowsVirtualKeyCode" : 13,
-  //     "unmodifiedText" : "\r","text" : "\r"});
-  // }
-  //
-  // async click(element:string) : Promise<any> {
-  //   return await this.cdp.Runtime.evaluate({
-  //           expression: `document.querySelector('${element}').click()`
-  //       });
-  // }
-  //
-  // kill () : any {
-  //   return this.cdp.close({id:this.chromeId});
-  //   // return shell.exec(`kill ${this.getChromeProcessId()}`);
-  // }
-  //
-  // private async launchLinux():Promise<any>{
-  //   //TODO: check is command exists
-  //
-  //   return this.launchCommand(this.linuxCommand);
-  // }
-  //
-  // private async launchMac():Promise<any>{
-  //   if( !fs.existsSync(this.darwinCommand) ) throw Error('Chrome Not Found');
-  //
-  //   return this.launchCommand(this.darwinCommand);
-  // }
-  //
-  // private async launchWin():Promise<any>{
-  //   console.log('TODO: launch windows OS');
-  //   throw new Error('TODO: launch windows OS');
-  // }
-  //
-  //
-  // private async launchCommand(chromeCommand:string) {
-  //
-  //   let successLaunched = await this.startLaunch(chromeCommand);
-  //   if(successLaunched) {
-  //     let result = await this.getWSUrl();
-  //     this.cdp = await CDP({tab:result.webSocketDebuggerUrl});
-  //     this.chromeId = result.id;
-  //
-  //     return {wsUrl:result.webSocketDebuggerUrl, pid:this.getChromeProcessId(), id:result.id};
-  //   }else return {};
-  // }
-  //
-  // private getChromeProcessId () :string {
-  //   return shell.exec("ps a | grep remote-debugging-port=9222 | grep tagui_user_profile | sed -e 's/^[ ]*//' | cut -d' ' -f 1 | sort -nur | head -n 1").stdout.trim();
-  // }
-  //
-  // private async startLaunch (chromeCommand:string) {
-  //   return new Promise((resolve, reject) => {
-  //
-  //       shell.exec(`${chromeCommand} ${this.chromeSwitches} ${this.windowSize} ${this.emptyIOCommand}`,
-  //          (code, stdout, stderr) => {
-  //             if(stderr)reject(stderr);
-  //             else resolve(true);
-  //         });
-  //   });
-  // }
-  //
 
 
 }

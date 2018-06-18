@@ -2,38 +2,50 @@
  * @module Chrome
  */
 
-import {LaunchModel,NavigateModel,TypeModel,ClickModel,CloseModel} from './model/model';
+// import {LaunchModel,NavigateModel,TypeModel,ClickModel,CloseModel} from './model/model';
 import {RpsContext} from '../context';
 import {ChromeUtil} from './util';
 
 let chromeUtil = new ChromeUtil();
 
-export function Launch (ctx:RpsContext,arg:string[],opts?:any) : Promise<any> {
-  let model = new LaunchModel(arg,opts);
-  return chromeUtil.launch(ctx);
+export async function Open (ctx:RpsContext, opts:any, ...arg:string[]) : Promise<any> {
+  let response = undefined;
+  if(!ctx.chrome.getCurrentBrowser()) {
+    await chromeUtil.launch(ctx);
+    response = await ctx.chrome.getCurrentPage();
+  }
+  else 
+    response = await chromeUtil.newPage(ctx);
+
+  //async call
+  if(arg[0]) chromeUtil.goto(ctx, opts, arg[0]);
+
+  return response;
+}
+export function Close (ctx:RpsContext,opts:any) : Promise<void> {
+  return chromeUtil.close(ctx,opts);
+}
+export function Goto (ctx:RpsContext,opts:any, url:string) : Promise<any> {
+  return chromeUtil.goto(ctx,opts,url);
+}
+export function Click (ctx:RpsContext,opts:any, selector:string) : Promise<any> {
+  return chromeUtil.click(ctx,opts,selector);
+}
+export function Type (ctx:RpsContext,opts:any, selector:string, text:string) : Promise<any> {
+  return chromeUtil.type(ctx,opts,selector,text);
+}
+export function Eval (ctx:RpsContext,opts:any, str:string) : Promise<any> {
+  return chromeUtil.evaluate(ctx,opts,str);
 }
 
-export function Run (ctx:RpsContext,command:string, arg:string[],opts?:any) : Promise<any> {
-  return chromeUtil.run(ctx,command,arg,opts);
-}
 
-// export function Navigate (ctx:RpsContext,arg:string[],opts?:any) : Promise<any> {
-//   let model = new NavigateModel(arg,opts);
-//   return chromeUtil.navigate(model.url);
-// }
-//
-// export function Type (ctx:RpsContext,arg:string[],opts?:any) : Promise<any> {
-//   let model = new TypeModel(arg,opts);
-//   return chromeUtil.type(model.text);
-// }
-//
-// export function Click (ctx:RpsContext,arg:string[],opts?:any) : Promise<any> {
-//   let model = new ClickModel(arg,opts);
-//
-//   return chromeUtil.click(model.element);
-// }
-//
-// export function Close (ctx:RpsContext,arg:string[],opts?:any) : Promise<any> {
-//   let model = new CloseModel(arg,opts);
-//   return chromeUtil.close(ctx);
+
+
+
+
+
+
+
+// export function Launch (ctx:RpsContext,opts:any, ...arg:string[]) : Promise<any> {
+//   return chromeUtil.launch(ctx);
 // }

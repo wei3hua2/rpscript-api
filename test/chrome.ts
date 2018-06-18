@@ -1,37 +1,37 @@
 import * as c from 'chai';
 import {RpsContext} from '../src/context';
 import * as chrome from '../src/chrome/expressions';
+import * as common from '../src/common/expressions';
 
 
-describe.skip('Chrome', () => {
-  xit('should launch & close chrome', (done) => {
+describe('Chrome', () => {
+
+  xit('should nav to google and popup', async () => {
     let $CONTEXT = new RpsContext();
 
-    chrome.Launch($CONTEXT,[]).then((res)=>{
-      c.expect($CONTEXT.chrome).to.exist;
-      // c.expect($CONTEXT.chrome.windows[0]).to.exist;
-      // c.expect($CONTEXT.chrome.windows[0].id).to.exist;
-      // c.expect($CONTEXT.chrome.windows[0].webSocketDebuggerUrl).to.exist;
-      // c.expect($CONTEXT.chrome.windows[0].cdp).to.exist;
+    let $RESULT = await chrome.Open($CONTEXT,{},"https://www.google.com.sg");
 
-      // chrome.Close($CONTEXT,[]).then(res=>{
-        done();
-      // });
+    $RESULT = await common.Once($CONTEXT,{},$RESULT,'load');
 
-    });
+    $RESULT = await chrome.Eval($CONTEXT,{},`alert('page loaded');`);
 
-  });
+    // $RESULT = await common.Notify($CONTEXT,{},"Loaded",JSON.stringify($RESULT));
 
-  it('Click on Page', (done) => {
+    c.expect(true).to.be.true;
+  }).timeout(0);
+
+  it('should nav to google, type lebron, click search', async () => {
     let $CONTEXT = new RpsContext();
 
-    chrome.Launch($CONTEXT,[]).then((res)=>{
-      chrome.Run($CONTEXT,"page.goto",["https://www.yahoo.com"]).then((res)=>{
-        done();
-      });
-    });
+    let $RESULT = await chrome.Open($CONTEXT,{},"https://www.google.com.sg");
 
+    $RESULT = await common.Once($CONTEXT,{},$RESULT,'load');
 
+    $RESULT = await chrome.Type($CONTEXT,{},'#lst-ib', 'Lebron James');
+    
+    $RESULT = await chrome.Type($CONTEXT,{},'.jsb > center:nth-child(1) > input:nth-child(1)', 'Lebron James');
+
+    c.expect(true).to.be.true;
   }).timeout(0);
 
 })

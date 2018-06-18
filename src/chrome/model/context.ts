@@ -10,6 +10,8 @@ export class ChromeContext {
 
   constructor(){
     this.browsers = [];
+    this.currentBrowserIndex = -1;
+    this.currentPageIndex = -1;
   }
 
   getCurrentBrowser():puppeteer.Browser{
