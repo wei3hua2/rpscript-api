@@ -1,16 +1,11 @@
-import opn from 'opn';
-// import fs from 'fs';
-import shelljs from 'shelljs';
-import request from 'request';
-import asyncPolling from 'async-polling';
+import R from 'ramda';
 import {RpsContext} from '../context';
-import {ChromeContext,ChromeConfig} from './model/context';
-import _ from 'lodash';
+import {ChromeContext,LaunchConfig} from './model/context';
 
 import puppeteer from 'puppeteer';
 import {ElementHandle, JSHandle,Browser,Page,Response} from 'puppeteer';
+import devices from 'puppeteer/DeviceDescriptors';
 
-const CDP = require('chrome-remote-interface');
 
 export class ChromeUtil {
 
@@ -18,8 +13,8 @@ export class ChromeUtil {
 
   constructor(){}
 
-  async launch(ctx:RpsContext) : Promise<Browser>{
-    let browser = await this.launchNewChrome(ctx.chrome.config);
+  async launch(ctx:RpsContext,opts:LaunchConfig) : Promise<Browser>{
+    let browser = await this.launchNewChrome(opts);
     ctx.chrome.addBrowser(browser);
 
     return browser;
@@ -39,41 +34,41 @@ export class ChromeUtil {
 
 //======  page
 
-  $ = (ctx:RpsContext, opts:any, selector:string) : Promise<ElementHandle> => this.run(ctx,'page.$',opts);
-  $$ = (ctx:RpsContext, opts:any, selector:string) : Promise<ElementHandle[]> => this.run(ctx,'page.$$',opts);
-  $$eval = (ctx:RpsContext, opts:any, selector:string, pageFn:any, ...args) : Promise<ElementHandle[]> => this.run(ctx,'page.$$eval',opts,pageFn,...args)
-  $eval = (ctx:RpsContext, opts:any, selector:string, pageFn:any, ...args) : Promise<ElementHandle[]>  => this.run(ctx,'page.$eval',opts,pageFn,...args)
+  $ = (ctx:RpsContext, opts:any, selector:string) : Promise<ElementHandle> => this.run(ctx,'page.$',opts, selector);
+  $$ = (ctx:RpsContext, opts:any, selector:string) : Promise<ElementHandle[]> => this.run(ctx,'page.$$',opts,selector);
+  $$eval = (ctx:RpsContext, opts:any, selector:string, pageFn:any, ...args) : Promise<ElementHandle[]> => this.run(ctx,'page.$$eval',opts,selector,pageFn,...args)
+  $eval = (ctx:RpsContext, opts:any, selector:string, pageFn:any, ...args) : Promise<ElementHandle[]>  => this.run(ctx,'page.$eval',opts,selector,pageFn,...args)
   $x = (ctx:RpsContext, opts:any, expression:string) : Promise<ElementHandle[]> => this.run(ctx,'page.$x',opts,expression);
 
   addScriptTag = (ctx:RpsContext, opts:any) : Promise<ElementHandle> => this.run(ctx,'page.addScriptTag',opts)
   addStyleTag = (ctx:RpsContext, opts:any) : Promise<ElementHandle> => this.run(ctx,'page.addStyleTag',opts)
 
-  authenticate = (ctx:RpsContext, opts:any, credential:Object) : Promise<any> => this.run(ctx,'page.authenticate',opts, credential)
+  authenticate = (ctx:RpsContext, opts:any, credential:Object) : Promise<void> => this.run(ctx,'page.authenticate',opts, credential)
 
   bringToFront = (ctx:RpsContext, opts:any) : Promise<any> => this.run(ctx,'page.bringToFront',opts)
 
-  browser = (ctx:RpsContext, opts:any) : Promise<any> => this.run(ctx,'page.browser',opts);
-  click = (ctx:RpsContext, opts:any, selector:string) : Promise<any> => this.run(ctx,'page.click',opts, selector);
+  browser = (ctx:RpsContext, opts:any) : Promise<Browser> => this.run(ctx,'page.browser',opts);
+  click = (ctx:RpsContext, opts:any, selector:string) : Promise<void> => this.run(ctx,'page.click',opts, selector);
   content = (ctx:RpsContext, opts:any) : Promise<string> => this.run(ctx,'page.content',opts)
 
   cookies = (ctx:RpsContext, opts:any, ...urls:string[]) : Promise<Object[]> => this.run(ctx,'page.cookies',opts,...urls)
   deleteCookie = (ctx:RpsContext, opts:any, ...cookies:Object[]) : Promise<any> => this.run(ctx,'page.deleteCookie',opts,...cookies);
   setCookie = (ctx:RpsContext, opts:any, ...cookies:Object[]) : Promise<any> => this.run(ctx,'page.setCookie',opts,...cookies);
 
-  emulate = (ctx:RpsContext, opts:any) : Promise<any> => this.run(ctx,'page.emulate',opts);
-  emulateMedia = (ctx:RpsContext, opts:any, mediaType:string) : Promise<any> => this.run(ctx,'page.emulateMedia',opts, mediaType);
+  emulate = (ctx:RpsContext, opts:any, device:string) : Promise<void> => this.run(ctx,'page.emulate',opts, devices[device]);
+  emulateMedia = (ctx:RpsContext, opts:any, mediaType:string) : Promise<void> => this.run(ctx,'page.emulateMedia',opts, mediaType);
   
   evaluate = (ctx:RpsContext, opts:any, str:string|Function,...args ) : Promise<any> => this.run(ctx,'page.evaluate',opts,str,args)
   evaluateHandle = (ctx:RpsContext, opts:any, str:string|Function,...args ) : Promise<JSHandle> => this.run(ctx,'page.evaluateHandle',opts,str,args)
   evaluateOnNewDocument = (ctx:RpsContext, opts:any, pageFn:string|Function,...args ) : Promise<void> => this.run(ctx,'page.evaluate',opts,pageFn,args)
   exposeFunction = (ctx:RpsContext, opts:any, name:string, pageFn:Function ) : Promise<void> => this.run(ctx,'page.exposeFunction',opts,name, pageFn)
 
-  focus = (ctx:RpsContext, opts:any, selector:string ) : Promise<any> => this.run(ctx,'page.focus',opts,selector)
+  focus = (ctx:RpsContext, opts:any, selector:string ) : Promise<void> => this.run(ctx,'page.focus',opts,selector)
 
   goBack = (ctx:RpsContext, opts:any ) : Promise<Response> => this.run(ctx,'page.goBack',opts)
   goForward = (ctx:RpsContext, opts:any ) : Promise<Response> => this.run(ctx,'page.goForward',opts)
   goto = (ctx:RpsContext, opts:any, url:string) : Promise<Response> => this.run(ctx,'page.goto',opts,url);  
-  hover = (ctx:RpsContext, opts:any, selector:string ) : Promise<any> => this.run(ctx,'page.hover',opts);
+  hover = (ctx:RpsContext, opts:any, selector:string ) : Promise<void> => this.run(ctx,'page.hover',opts);
   isClosed = (ctx:RpsContext, opts:any ) : Promise<boolean> => this.run(ctx,'page.isClosed',opts);
   pdf = (ctx:RpsContext, opts:any ) : Promise<Buffer> => this.run(ctx,'page.pdf',opts);
   
@@ -83,21 +78,21 @@ export class ChromeUtil {
 
   select = (ctx:RpsContext, opts:any, selector:string, ...values:string[] ) : Promise<string[]> => this.run(ctx,'page.select',opts,selector,...values);
 
-  setBypassCSP = (ctx:RpsContext, opts:any, enabled:boolean ) : Promise<any> => this.run(ctx,'page.setBypassCSP',opts,enabled);
-  setCacheEnabled = (ctx:RpsContext, opts:any, enabled:boolean ) : Promise<any> => this.run(ctx,'page.setCacheEnabled',opts,enabled);
-  setContent = (ctx:RpsContext, opts:any, html:string ) : Promise<any> => this.run(ctx,'page.setContent',opts,html);
-  setDefaultNavigationTimeout = (ctx:RpsContext, opts:any, timeout:number ) : Promise<any> => this.run(ctx,'page.setDefaultNavigationTimeout',opts,timeout);
-  setExtraHTTPHeaders = (ctx:RpsContext, opts:any, header:Object ) : Promise<any> => this.run(ctx,'page.setExtraHTTPHeaders',opts,header);
-  setJavaScriptEnabled = (ctx:RpsContext, opts:any, enabled:boolean ) : Promise<any> => this.run(ctx,'page.setExtraHTTPHeaders',opts,enabled);
-  setOfflineMode = (ctx:RpsContext, opts:any, enabled:boolean ) : Promise<any> => this.run(ctx,'page.setOfflineMode',opts,enabled);
-  setRequestInterception = (ctx:RpsContext, opts:any, value:boolean ) : Promise<any> => this.run(ctx,'page.setOfflineMode',opts,value);
-  setUserAgent = (ctx:RpsContext, opts:any, userAgent:string ) : Promise<any> => this.run(ctx,'page.setUserAgent',opts,userAgent);
-  setViewport = (ctx:RpsContext, opts:any, viewPort:Object ) : Promise<any> => this.run(ctx,'page.setUserAgent',opts,viewPort);
+  setBypassCSP = (ctx:RpsContext, opts:any, enabled:boolean ) : Promise<void> => this.run(ctx,'page.setBypassCSP',opts,enabled);
+  setCacheEnabled = (ctx:RpsContext, opts:any, enabled:boolean ) : Promise<void> => this.run(ctx,'page.setCacheEnabled',opts,enabled);
+  setContent = (ctx:RpsContext, opts:any, html:string ) : Promise<void> => this.run(ctx,'page.setContent',opts,html);
+  setDefaultNavigationTimeout = (ctx:RpsContext, opts:any, timeout:number ) : Promise<void> => this.run(ctx,'page.setDefaultNavigationTimeout',opts,timeout);
+  setExtraHTTPHeaders = (ctx:RpsContext, opts:any, header:Object ) : Promise<void> => this.run(ctx,'page.setExtraHTTPHeaders',opts,header);
+  setJavaScriptEnabled = (ctx:RpsContext, opts:any, enabled:boolean ) : Promise<void> => this.run(ctx,'page.setExtraHTTPHeaders',opts,enabled);
+  setOfflineMode = (ctx:RpsContext, opts:any, enabled:boolean ) : Promise<void> => this.run(ctx,'page.setOfflineMode',opts,enabled);
+  setRequestInterception = (ctx:RpsContext, opts:any, value:boolean ) : Promise<void> => this.run(ctx,'page.setOfflineMode',opts,value);
+  setUserAgent = (ctx:RpsContext, opts:any, userAgent:string ) : Promise<void> => this.run(ctx,'page.setUserAgent',opts,userAgent);
+  setViewport = (ctx:RpsContext, opts:any, viewPort:Object ) : Promise<void> => this.run(ctx,'page.setUserAgent',opts,viewPort);
 
-  tap = (ctx:RpsContext, opts:any, selector:string ) : Promise<any> => this.run(ctx,'page.tap',opts, selector);
+  tap = (ctx:RpsContext, opts:any, selector:string ) : Promise<void> => this.run(ctx,'page.tap',opts, selector);
 
   title = (ctx:RpsContext, opts:any) : Promise<string> => this.run(ctx,'page.tap',opts);
-  type = (ctx:RpsContext, opts:any, selector:string, text) : Promise<any> => this.run(ctx,'page.type',opts, selector,text);
+  type = (ctx:RpsContext, opts:any, selector:string, text) : Promise<void> => this.run(ctx,'page.type',opts, selector,text);
 
   waitFor = (ctx:RpsContext, opts:any,selectorOrFunctionOrTimeout:string|number|Function) : Promise<JSHandle> => this.run(ctx,'page.waitFor',opts, selectorOrFunctionOrTimeout);
   waitForFunction = (ctx:RpsContext, opts:any, pageFn:Function|string) : Promise<JSHandle> => this.run(ctx,'page.waitForFunction',opts,pageFn);
@@ -126,9 +121,9 @@ export class ChromeUtil {
 
   //======  coverage
   startCSSCoverage = (ctx:RpsContext, opts:any) : Promise<void> => this.run(ctx,'coverage.startCSSCoverage',opts);
-  stopCSSCoverage = (ctx:RpsContext, opts:any) : Promise<void> => this.run(ctx,'coverage.stopCSSCoverage',opts);
+  stopCSSCoverage = (ctx:RpsContext, opts:any) : Promise<Object[]> => this.run(ctx,'coverage.stopCSSCoverage',opts);
   startJSCoverage = (ctx:RpsContext, opts:any) : Promise<void> => this.run(ctx,'coverage.startJSCoverage',opts);
-  stopJSCoverage = (ctx:RpsContext, opts:any) : Promise<void> => this.run(ctx,'coverage.stopJSCoverage',opts);
+  stopJSCoverage = (ctx:RpsContext, opts:any) : Promise<Object[]> => this.run(ctx,'coverage.stopJSCoverage',opts);
 
   //======  tracing
   tracingStart = (ctx:RpsContext, opts:any) : Promise<void> => this.run(ctx,'tracing.start',opts);
@@ -154,9 +149,6 @@ export class ChromeUtil {
     else if(clazz === 'mouse') entity = (await ctx.chrome.getCurrentPage()).mouse;
     else if(clazz === 'touchscreen') entity = (await ctx.chrome.getCurrentPage()).touchscreen;
     else if(clazz === 'tracing') entity = (await ctx.chrome.getCurrentPage()).tracing;
-    // else if(clazz === 'frame') entity = (await ctx.chrome.getCurrentPage()).mainFrame();
-    // else if(clazz === 'target') entity = (await ctx.chrome.getCurrentPage()).target;
-    // else if(clazz === 'worker') entity = (await ctx.chrome.getCurrentPage()).workers();
     
 
     result = await entity[action].apply(entity, params);
@@ -164,61 +156,57 @@ export class ChromeUtil {
     return result;
   }
 
-  private async launchNewChrome(config:ChromeConfig): Promise<puppeteer.Browser> {
-    let browser = await puppeteer.launch({
-      headless: false,
-      args: ['--no-sandbox', '--disable-setuid-sandbox',
-             `--user-data-dir=${config.userdataDir}`, `--window-size=${config.winSize}`]
-    });
-    return browser;
+  private async launchNewChrome(config:LaunchConfig): Promise<puppeteer.Browser> {
+    let conf = R.merge(ChromeContext.DEFAULT_LAUNCH_CONFIG,config);
+    return await puppeteer.launch(conf);
   }
 
-  private async launchDefaultChrome(config:ChromeConfig): Promise<puppeteer.Browser> {
-    let url = "about:blank";
+  // private async launchDefaultChrome(config:LaunchConfig): Promise<puppeteer.Browser> {
+  //   let url = "about:blank";
 
-    opn(`${url}`,{app: [
-      this.deriveOsChromeName(),
-      `--web-security=${config.webSecurity}`, `--remote-debugging-port=${config.debuggingPort}`,
-      `--user-data-dir=${config.userdataDir}`, `--window-size=${config.winSize}`]});
+  //   opn(`${url}`,{app: [
+  //     this.deriveOsChromeName(),
+  //     `--web-security=${config.webSecurity}`, `--remote-debugging-port=${config.debuggingPort}`,
+  //     `--user-data-dir=${config.userdataDir}`, `--window-size=${config.winSize}`]});
 
-    let info = await this.getDebuggingInfo();
-    let browser = puppeteer.connect({browserWSEndpoint:info.webSocketDebuggerUrl});
-    // let cdp = await CDP({tab:info.webSocketDebuggerUrl});
-    return browser;
-  }
+  //   let info = await this.getDebuggingInfo();
+  //   let browser = puppeteer.connect({browserWSEndpoint:info.webSocketDebuggerUrl});
+  //   // let cdp = await CDP({tab:info.webSocketDebuggerUrl});
+  //   return browser;
+  // }
 
-  private getDebuggingInfo () {
-    return new Promise<any>( (resolve, reject) => {
+  // private getDebuggingInfo () {
+  //   return new Promise<any>( (resolve, reject) => {
 
-      let polling = asyncPolling( (end) => this.handleDebuggingInfo(end),5000);
+  //     let polling = asyncPolling( (end) => this.handleDebuggingInfo(end),5000);
 
-      polling.on('error', function (error:any) {});
-      polling.on('result',  (result:any) => this.handleResult(result, polling, resolve));
+  //     polling.on('error', function (error:any) {});
+  //     polling.on('result',  (result:any) => this.handleResult(result, polling, resolve));
 
-      polling.run();
-    });
-  }
+  //     polling.run();
+  //   });
+  // }
 
-  private handleDebuggingInfo (end:any) : void {
-    request('http://localhost:9222/json', function (error, resp, body) {
-      if(resp && resp.statusCode === 200) end(undefined, JSON.parse(body))
-      else end(error);
-    });
-  }
-  private handleResult(result:any, polling:any, resolve:any) : void{
-    let output:any = _.find(result,{'url':'about:blank'});
+  // private handleDebuggingInfo (end:any) : void {
+  //   request('http://localhost:9222/json', function (error, resp, body) {
+  //     if(resp && resp.statusCode === 200) end(undefined, JSON.parse(body))
+  //     else end(error);
+  //   });
+  // }
+  // private handleResult(result:any, polling:any, resolve:any) : void{
+  //   let output:any = _.find(result,{'url':'about:blank'});
 
-    if(output && output['webSocketDebuggerUrl']) {
-      resolve(output);
-      polling.stop();
-    }
-  }
+  //   if(output && output['webSocketDebuggerUrl']) {
+  //     resolve(output);
+  //     polling.stop();
+  //   }
+  // }
 
-  private deriveOsChromeName () : string{
-    if(process.platform === 'win32') return "chrome";
-    else if (process.platform === 'linux') return "google-chrome";
-    else if (process.platform === 'darwin') return "google chrome";
-  }
+  // private deriveOsChromeName () : string{
+  //   if(process.platform === 'win32') return "chrome";
+  //   else if (process.platform === 'linux') return "google-chrome";
+  //   else if (process.platform === 'darwin') return "google chrome";
+  // }
 
 
 }

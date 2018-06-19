@@ -1,6 +1,8 @@
-import * as c from 'chai';
+import {expect} from 'chai';
 import * as test from '../src/test/expressions';
 import {RpsContext} from '../src/context';
+
+import {TestUtils} from '../src/test/utils';
 
 let $CONTEXT,$RESULT;
 
@@ -9,8 +11,8 @@ beforeEach(() => {
 })
 
 
-describe.skip('Test', () => {
-  it('add test suite', async function() {
+describe('Test', () => {
+  xit('add test suite', async function() {
     let TestCase = test.TestCase($CONTEXT,{});
 
     let $RESULT:any = await test.TestSuite($CONTEXT, {}, "Test Suite");
@@ -30,7 +32,26 @@ describe.skip('Test', () => {
       reportTitle:'Hello World',
       autoOpen:false});
 
-    c.expect($RESULT).to.be.true;
+    expect($RESULT).to.be.true;
+  });
+
+  it('parse BDD chain', () => {
+    let util = new TestUtils;
+    util.parseChaiExpect(11,11,"to","not","be","true");
+  });
+
+  it('should run util test', async function () {
+    let util = new TestUtils;
+
+    await util.createSuite($CONTEXT,{},"suite 1");
+    
+    await util.createTestCase($CONTEXT,{},"tc 1",1,2,"to","not","be","equal");
+    await util.createTestCase($CONTEXT,{},"tc 2",2,2,"to","be","equal");
+    await util.createTestCase($CONTEXT,{},"tc 3",true,null,"to","be","true");
+    
+    let result = await util.runTest($CONTEXT,{});
   });
 
 })
+
+// expect "shoule be not working" 1 to be equal 2

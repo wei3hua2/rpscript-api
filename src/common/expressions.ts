@@ -21,11 +21,12 @@ function _Open (ctx:RpsContext,opts:{}, filepath:string) : Promise<any> {
 let Open = R.curry(_Open);
 export {Open};
 
-
 function _Wait (ctx:RpsContext,opts:{}, period:number) : Promise<any> {
   return new Promise(function(resolve) {
       ctx.event.emit("action","wait", period);
-      setTimeout(resolve,period*1000);
+      setTimeout(function () {
+        resolve(ctx.$RESULT);
+      },period*1000);
   });
 }
 let Wait = R.curry(_Wait);
@@ -51,6 +52,18 @@ function _Echo (ctx:RpsContext,opts:{}, ent:string) : Promise<any> {
 }
 let Echo = R.curry(_Echo);
 export {Echo};
+
+function _As (ctx:RpsContext,opts:{}, variable:string, value:any) : Promise<any> {
+  return new Promise(function(resolve) {
+      ctx.event.emit("action","as", variable, value);
+      ctx.variables[variable] = value;
+      
+      resolve(value);
+  });
+}
+let As = R.curry(_As);
+export {As};
+
 
 function _Once (ctx:RpsContext,opts:{}, event:EventEmitter, evtName:string) : Promise<any> {
   return new Promise(function(resolve) {
