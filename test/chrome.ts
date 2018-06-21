@@ -1,42 +1,40 @@
 import * as c from 'chai';
-import R from 'ramda';
 import {RpsContext} from '../src/context';
-import * as chrome from '../src/chrome/expressions';
-import * as common from '../src/common/expressions';
-import * as fn from '../src/functional/expressions';
-import * as test from '../src/test/expressions';
-import * as file from '../src/file/expressions';
+import chrome from '../src/chrome/expressions';
+import common from '../src/common/expressions';
+import fn from '../src/functional/expressions';
+import test from '../src/test/expressions';
+import file from '../src/file/expressions';
 
-let $CONTEXT, $RESULT;
+let $CONTEXT;
 describe('Chrome', () => {
 
   beforeEach(() => {
     $CONTEXT = new RpsContext();
-    // $RESULT = $CONTEXT.$RESULT;
   })
 
   xit('should nav to google and popup', async () => {
 
-    let $RESULT = await chrome.Open($CONTEXT,{},"https://www.google.com.sg");
+    $CONTEXT.$RESULT = await chrome.Open($CONTEXT,{},"https://www.google.com.sg");
 
-    $RESULT = await common.Once($CONTEXT,{},$RESULT,'load');
+    $CONTEXT.$RESULT = await common.Once($CONTEXT,{},$CONTEXT.$RESULT,'load');
 
-    $RESULT = await chrome.Eval($CONTEXT,{},`alert('page loaded');`);
+    $CONTEXT.$RESULT = await chrome.Eval($CONTEXT,{},`alert('page loaded');`);
 
     c.expect(true).to.be.true;
   }).timeout(0);
 
   xit('should nav to google, type lebron, click search', async function() {
 
-    let $RESULT = await chrome.Open($CONTEXT,{},"https://www.google.com.sg");
+    $CONTEXT.$RESULT = await chrome.Open($CONTEXT,{},"https://www.google.com.sg");
 
-    $RESULT = await common.Once($CONTEXT,{},$RESULT,'load');
+    $CONTEXT.$RESULT = await common.Once($CONTEXT,{},$CONTEXT.$RESULT,'load');
 
-    $RESULT = await chrome.Type($CONTEXT,{},'#lst-ib', 'Lebron James');
+    $CONTEXT.$RESULT = await chrome.Type($CONTEXT,{},'#lst-ib', 'Lebron James');
 
-    $RESULT = await common.Wait($CONTEXT,{},3);
+    $CONTEXT.$RESULT = await common.Wait($CONTEXT,{},3);
     
-    $RESULT = await chrome.Click($CONTEXT,{},'.jsb > center:nth-child(1) > input:nth-child(1)');
+    $CONTEXT.$RESULT = await chrome.Click($CONTEXT,{},'.jsb > center:nth-child(1) > input:nth-child(1)');
 
     c.expect(true).to.be.true;
   }).timeout(0);
@@ -72,25 +70,25 @@ describe('Chrome', () => {
 
   xit('should generate PDF from ycombinator', async function () {
     try{
-      let $RESULT = await chrome.Open($CONTEXT,{},"https://www.google.com.sg");
+      $CONTEXT.$RESULT = await chrome.Open($CONTEXT,{},"https://www.google.com.sg");
 
-      $RESULT = await chrome.Emulate($CONTEXT,{},'screen');
+      $CONTEXT.$RESULT = await chrome.Emulate($CONTEXT,{},'screen');
 
-      $RESULT = await common.Wait($CONTEXT,{},3);
+      $CONTEXT.$RESULT = await common.Wait($CONTEXT,{},3);
 
-      $RESULT = await chrome.Emulate($CONTEXT,{},'print');
+      $CONTEXT.$RESULT = await chrome.Emulate($CONTEXT,{},'print');
 
-      $RESULT = await common.Wait($CONTEXT,{},3);
+      $CONTEXT.$RESULT = await common.Wait($CONTEXT,{},3);
 
-      $RESULT = await chrome.Emulate($CONTEXT,{},'iPhone 6');
+      $CONTEXT.$RESULT = await chrome.Emulate($CONTEXT,{},'iPhone 6');
 
-      $RESULT = await common.Wait($CONTEXT,{},3);
+      $CONTEXT.$RESULT = await common.Wait($CONTEXT,{},3);
 
-      $RESULT = await chrome.Emulate($CONTEXT,{},'iPhone 6 landscape');
+      $CONTEXT.$RESULT = await chrome.Emulate($CONTEXT,{},'iPhone 6 landscape');
 
-      $RESULT = await common.Wait($CONTEXT,{},3);
+      $CONTEXT.$RESULT = await common.Wait($CONTEXT,{},3);
 
-      $RESULT = await chrome.Close($CONTEXT,{});
+      $CONTEXT.$RESULT = await chrome.Close($CONTEXT,{});
 
       // let exists = await file.Exists($CONTEXT,{},"hn.pdf");
 
@@ -111,13 +109,16 @@ describe('Chrome', () => {
     'https://mochajs.org','http://www.theuselessweb.com/','https://www.facebook.com/',
     'http://somewebsite.co/'];
 
+    $CONTEXT.event.on('action',
+      (mod,key,action,...args) => console.log(`${new Date} : ${mod} , ${key} , ${action} , ${action==='start'? args : ''}`));
+
     $CONTEXT.$RESULT = await chrome.Open($CONTEXT,{headless:true},"about:blank");
 
     await common.Wait($CONTEXT,{},2);
 
     await fn.ForEach($CONTEXT,{}, async function(site) {
 
-      test.TestCase($CONTEXT,{},"should be ok "+site, async function() {
+      await test.TestCase($CONTEXT,{},"should be ok "+site, async function() {
         
         $CONTEXT.$RESULT = await chrome.Goto($CONTEXT,{},site);
 
@@ -129,8 +130,8 @@ describe('Chrome', () => {
     $CONTEXT.$RESULT = await test.TestReport($CONTEXT,{});
 
     
-    await common.Wait($CONTEXT,{},3);
-    await chrome.Close($CONTEXT,{});
+    // await common.Wait($CONTEXT,{},3);
+    // await chrome.Close($CONTEXT,{});
 
     common.Open($CONTEXT,{},"./mochawesome-report/mochawesome.html");
 

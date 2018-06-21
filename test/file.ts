@@ -1,5 +1,5 @@
 import * as c from 'chai';
-import * as file from '../src/file/expressions';
+import file from '../src/file/expressions';
 import {RpsContext} from '../src/context';
 
 let $CONTEXT,$RESULT;
@@ -14,24 +14,18 @@ describe('File', () => {
     let pathDirectory = "./test/fixture/tempfilename.txt";
     let content = "Hello";
 
-    let create = file.Write($CONTEXT,{});
-    let append = file.Append($CONTEXT,{});
-    let read = file.Read($CONTEXT,{});
-    let del = file.Delete($CONTEXT,{});
-    let exists = file.Exists($CONTEXT,{});
-
-    $RESULT = await create(pathDirectory);
-    $RESULT = await exists(pathDirectory);
+    $RESULT = await file.Write($CONTEXT,{},pathDirectory);
+    $RESULT = await file.Exists($CONTEXT,{},pathDirectory);
 
     c.expect($RESULT).to.be.true; //file exist
 
-    $RESULT = await append(pathDirectory, content);
-    $RESULT = await read(pathDirectory);
+    $RESULT = await file.Append($CONTEXT,{},pathDirectory, content);
+    $RESULT = await file.Read($CONTEXT,{},pathDirectory);
 
     c.expect($RESULT).to.contains(content);  //content is written
 
-    $RESULT = await del(pathDirectory);
-    $RESULT = await exists(pathDirectory);
+    $RESULT = await file.Delete($CONTEXT,{},pathDirectory);
+    $RESULT = await file.Exists($CONTEXT,{},pathDirectory);
 
     c.expect($RESULT).to.be.false;    //removed
   });

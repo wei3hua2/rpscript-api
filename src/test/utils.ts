@@ -1,6 +1,6 @@
 import Mocha from 'mocha';
 import {expect} from 'chai';
-import {Suite,Test} from 'mocha';
+import {Suite,Test, Runner} from 'mocha';
 import R from 'ramda';
 import {RpsContext} from '../context';
 
@@ -20,52 +20,36 @@ export interface ReportOptions {
 
 export class TestUtils {
 
-  createSuite(ctx:RpsContext,opts:{}, suitename:string) :Promise<void>{
+  createSuite(ctx:RpsContext,opts:{}, suitename:string) :Promise<Suite>{
       // @ts-ignore
       ctx.test.mocha = new Mocha();
       // @ts-ignore
       ctx.test.suite = Suite.create(ctx.test.mocha.suite, suitename);
       ctx.test.suite['enableTimeouts'](false);
 
-      return Promise.resolve();
+      return Promise.resolve(ctx.test.suite);
   }
 
   TC_DEFAULT = {type:''};
 
-  // async createTestCase (ctx:RpsContext, opts:TestCaseOpts, testname:string, 
-  //   expect:any, actual:any, ...chains:any[]) : Promise<void> {
-    
-  //   let options = R.merge(this.TC_DEFAULT, opts);
-
-  //   if(!ctx.test.mocha) await this.createSuite(ctx,{},'');
-  
-  //   // @ts-ignore
-  //   ctx.test.suite.addTest(
-  //     new Test(testname, () => this.parseChaiExpect(expect, actual, chains))
-  //   );
-  
-  //   return Promise.resolve();
-  // }
 
   async createTestCase (ctx:RpsContext, opts:TestCaseOpts, testname:string, 
-    fn) : Promise<void> {
+    fn:()=>void) : Promise<Test> {
     
     let options = R.merge(this.TC_DEFAULT, opts);
 
     if(!ctx.test.mocha) await this.createSuite(ctx,{},'');
   
+    let t = new Test(testname,fn);
     // @ts-ignore
-    ctx.test.suite.addTest(
-      new Test(testname, fn)
-      // new Test(testname, () => this.parseChaiExpect(expect, actual, chains))
-    );
+    ctx.test.suite.addTest(t);
   
-    return Promise.resolve();
+    return Promise.resolve(t);
   }
 
    parseChaiExpect (
-      expected:any, actual?:any,
-      ...chains:any[]) {
+      expected:any, actual?:any, ...chains:any[]) {
+        
     chains = R.flatten(chains);
 
     let res = expect(expected);
@@ -81,7 +65,7 @@ export class TestUtils {
 //   DEFAULT_REPORTER = {reporter:'src/test/my-reporter.js'};
   DEFAULT_REPORTER = {reporter:'mochawesome'};
 
-  runTest (ctx:RpsContext, opts:any) : Promise<any> {
+  runTest (ctx:RpsContext, opts:any) : Promise<Runner> {
   
     return new Promise((resolve,reject) => {
   
@@ -96,7 +80,7 @@ export class TestUtils {
         quiet:true
       });
     
-      ctx.test.runner = ctx.test.mocha.run( (...param) => resolve(param));
+      ctx.test.runner = ctx.test.mocha.run( () => resolve(ctx.test.runner));
       
     });
   }

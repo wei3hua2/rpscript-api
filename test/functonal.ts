@@ -1,5 +1,5 @@
 import * as c from 'chai';
-import * as functional from '../src/functional/expressions';
+import functional from '../src/functional/expressions';
 import {RpsContext} from '../src/context';
 
 let $CONTEXT;

@@ -1,6 +1,6 @@
 import * as c from 'chai';
 import * as m from 'mocha';
-import * as desktop from '../src/desktop/expressions';
+import desktop from '../src/desktop/expressions';
 import {RpsContext} from '../src/context';
 
 let $CONTEXT;
