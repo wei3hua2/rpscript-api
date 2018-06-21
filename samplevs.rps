@@ -1,0 +1,10 @@
+run "http://www.google.com"
+
+
+Launch "http://www.google.com.sg"
+Launch "http://www.google.com"
+
+
+Launch "hello world"
+
+Launch "<url here>"
